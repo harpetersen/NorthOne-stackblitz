@@ -40,7 +40,7 @@ const schema = buildSchema(`
   }
 
   type Transaction {
-    ID: ID!
+    id: ID!
     Date: Date!
     Amount: Int!
     Status: StatusValues!
@@ -59,7 +59,7 @@ const schema = buildSchema(`
   type Mutation {
     addTransaction: Transaction
     updateTransaction(id: Int!): Transaction
-    deleteTransaction(id: Int!): Int
+    deleteTransaction(id: Int!): Boolean
   }
 `);
 
@@ -95,7 +95,7 @@ var mappingData = [
 // Default transaction info for to ensure availaiblity for testing
 var transactions = [
   {
-    ID: 0,
+    id: 0,
     Date: '2023-09-24T23:29:56.901Z',
     Amount: 1,
     Status: 'Pending',
@@ -104,7 +104,7 @@ var transactions = [
     Note: 'TestValue1, please ignore'
   }, 
   {
-    ID: 1,
+    id: 1,
     Date: '2023-09-24T23:29:56.901Z',
     Amount: -1,
     Status: 'Pending',
@@ -113,7 +113,7 @@ var transactions = [
     Note: 'TestValue2, please ignore'
   },
   {
-    ID: 2,
+    id: 2,
     Date: '2023-09-24T23:29:56.901Z',
     Amount: 2,
     Status: 'Posted',
@@ -122,7 +122,7 @@ var transactions = [
     Note: 'TestValue3, please ignore'
   }, 
   {
-    ID: 3,
+    id: 3,
     Date: '2023-09-24T23:29:56.901Z',
     Amount: -2,
     Status: 'Posted',
@@ -164,12 +164,28 @@ var createTransaction = function(args){
 
 // This function is for updating a transaction entry
 var updateTransaction = function(args){
-  return
+  if (args.Method){
+    args.Method = mappingData.filter(value => args.Method)[0]
+  }
+  transactions.map(transaction => {
+    if (transaction.id == args.id){
+      Object.keys(args).forEach(key => {
+        transaction[key] = args[key]
+      })
+    }
+  })
+  return updatedTransaction
 }
 
 // This function is for removing a transaction entry
 var deleteTransaction = function(args){
-  return
+  const index = transactions.findIndex(transaction => transaction.ID === ID);
+  if (index !== -1) {
+    // Remove the transaction at the specified index
+    transactions.splice(index, 1);
+    return true; // Return true to indicate successful deletion
+  }
+  return false;
 }
 
 // This function is for listing all transactions entry
