@@ -3,6 +3,7 @@ const { graphqlHTTP } = require('express-graphql');
 const { buildSchema, GraphQLScalarType } = require('graphql');
 const { Kind } = require('graphql/language');
 
+// For including a Date scalar
 const resolverMap = {
   Date: new GraphQLScalarType({
     name: 'Date',
@@ -39,7 +40,7 @@ const schema = buildSchema(`
   }
 
   type Transaction {
-    ID: String!
+    ID: ID!
     Date: Date!
     Amount: Int!
     Status: StatusValues!
@@ -92,7 +93,7 @@ var mappingData = [
 ] 
 
 // Default transaction info for to ensure availaiblity for testing
-var mappingData = [
+var transactions = [
   {
     ID: 0,
     Date: '2023-09-24T23:29:56.901Z',
@@ -136,7 +137,7 @@ const root = {
   hello: () => {
     return 'Hello, world!';
   },
-  createTransaction: createTransaction,
+  addTransaction: createTransaction,
   updateTransaction: updateTransaction,
   deleteTransaction: deleteTransaction,
   allTransactions: requestAllTransactions,
@@ -147,7 +148,10 @@ const root = {
 
 // This function is for creating a new transaction
 var createTransaction = function(args){
-  return
+  args.Method = mappingData.filter(value => args.Method)[0]
+
+    // Call the GraphQL mutation resolver to add a new transaction
+    return resolvers.Mutation.addTransaction({ args });
 }
 
 // This function is for updating a transaction entry
