@@ -40,24 +40,24 @@ const schema = buildSchema(`
 
   type Transaction {
     id: ID!
-    Date: Date!
-    Amount: Int!
-    Status: StatusValues!
-    CounterpartyName: String!
-    MethodCode: Int
-    Note: String
+    date: Date!
+    amount: Int!
+    status: StatusValues!
+    counterpartyName: String!
+    methodCode: Int
+    note: String
   }
 
   type Query {
     allTransactions: [Transaction]
-    methodTransactions(value: String!): [Transaction]
+    methodTransactions(Method: String!): [Transaction]
     balance: Int
     methodMap: [Mapping]
     healthCheck: Boolean
   }
 
   type Mutation {
-    addTransaction: Transaction
+    addTransaction(date: Date!, amount: Int!, status: StatusValues!, counterpartyName: String!, methodCode: Int, note: String): Transaction
     updateTransaction(id: Int!): Transaction
     deleteTransaction(id: Int!): Boolean
   }
@@ -66,27 +66,27 @@ const schema = buildSchema(`
 // Default mapping data
 var mappingData = [
   {
-    id: 12,
+    id: '12',
     value: 'Card Purchase',
   },
   {
-    id: 34,
+    id: '34',
     value: 'ACH',
   },
   {
-    id: 56,
+    id: '56',
     value: 'Wire',
   },
   {
-    id: 78,
+    id: '78',
     value: 'Fee',
   },
   {
-    id: -1, // Default for transactions with positive values
+    id: '-1', // Default for transactions with positive values
     value: 'Incoming',
   },
   {
-    id: -2, // Default for transactions with negative values
+    id: '-2', // Default for transactions with negative values
     value: 'Outgoing',
   },
 ];
@@ -95,59 +95,82 @@ var mappingData = [
 var transactions = [
   {
     id: 0,
-    Date: '2023-09-24T23:29:56.901Z',
-    Amount: 1,
-    Status: 'Pending',
-    CounterpartyName: 'Test01',
-    MethodCode: -1,
-    Note: 'TestValue1, please ignore',
+    date: '2023-09-24T23:29:56.901Z',
+    amount: 1,
+    status: 'Pending',
+    counterpartyName: 'Test01',
+    methodCode: -1,
+    note: 'TestValue1, please ignore',
   },
   {
     id: 1,
-    Date: '2023-09-24T23:29:56.901Z',
-    Amount: -1,
-    Status: 'Pending',
-    CounterpartyName: 'Test02',
-    MethodCode: -2,
-    Note: 'TestValue2, please ignore',
+    date: '2023-09-24T23:29:56.901Z',
+    amount: -1,
+    status: 'Pending',
+    counterpartyName: 'Test02',
+    methodCode: -2,
+    note: 'TestValue2, please ignore',
   },
   {
     id: 2,
-    Date: '2023-09-24T23:29:56.901Z',
-    Amount: 2,
-    Status: 'Posted',
-    CounterpartyName: 'Test03',
-    MethodCode: -1,
-    Note: 'TestValue3, please ignore',
+    date: '2023-09-24T23:29:56.901Z',
+    amount: 2,
+    status: 'Posted',
+    counterpartyName: 'Test03',
+    methodCode: -1,
+    note: 'TestValue3, please ignore',
   },
   {
     id: 3,
-    Date: '2023-09-24T23:29:56.901Z',
-    Amount: -2,
-    Status: 'Posted',
-    CounterpartyName: 'Test04',
-    MethodCode: -2,
-    Note: 'TestValue4, please ignore',
+    date: '2023-09-24T23:29:56.901Z',
+    amount: -2,
+    status: 'Posted',
+    counterpartyName: 'Test04',
+    methodCode: -2,
+    note: 'TestValue4, please ignore',
   },
 ];
 
 // The root provides a resolver function for each API endpoint
 const root = {
-  healthCheck: () => {
+  healthCheck: (args) => {
     return true;
   },
-  addTransaction: () => { return createTransaction()},
-  updateTransaction: () => { return updateTransaction()},
-  deleteTransaction:  () => { return deleteTransaction()},
-  allTransactions:  () => { return requestAllTransactions()},
-  methodTransactions:  () => { return requestTransactionsByMethod()},
-  balance:  () => { return requestTotalAllTransactionsBalance()},
-  methodMap:  () => { return requestMethodCodeMapping()},
+  addTransaction: (args) => {
+    return createTransaction(args);
+  },
+  updateTransaction: (args) => {
+    return updateTransaction(args);
+  },
+  deleteTransaction: (args) => {
+    return deleteTransaction(args);
+  },
+  allTransactions: (args) => {
+    return requestAllTransactions(args);
+  },
+  methodTransactions: (args) => {
+    return requestTransactionsByMethod(args);
+  },
+  balance: (args) => {
+    return requestTotalAllTransactionsBalance(args);
+  },
+  methodMap: (args) => {
+    return requestMethodCodeMapping(args);
+  },
 };
 
 // This function is for creating a new transaction
 var createTransaction = function (args) {
-  args.Method = mappingData.filter((value) => args.Method)[0];
+  if (!args.Method) {
+    if (arg.Amount >= 0) {
+      args.Method == 'Incoming';
+    } else {
+      args.Method == 'Outgoing';
+    }
+  }
+  if (!args.MethodCode) {
+    args.MethodCode = mappingData.filter((value) => args.Method)[0];
+  }
   const newTransaction = {
     Date: args.Date,
     Amount: args.Amount,
@@ -164,7 +187,7 @@ var createTransaction = function (args) {
 // This function is for updating a transaction entry
 var updateTransaction = function (args) {
   if (args.Method) {
-    args.Method = mappingData.filter((value) => args.Method)[0];
+    args.MethodCode = mappingData.filter((value) => args.Method)[0];
   }
   transactions.map((transaction) => {
     if (transaction.id == args.id) {
@@ -198,23 +221,23 @@ var requestAllTransactions = function (args) {
 
 // This function is for getting all transactions by a method
 var requestTransactionsByMethod = function (args) {
-  args.Method = mappingData.filter((value) => args.Method)[0];
-  return transactions.filter((Method) => transactions.Method === args.Method);
+  args.MethodCode = mappingData.filter((value) => args.Method)[0];
+  return transactions.filter(
+    (MethodCode) => transactions.MethodCode === args.MethodCode
+  );
 };
 
 // This function is for getting the current account balance
 var requestTotalAllTransactionsBalance = function () {
   let totalBalance = 0;
   transactions.forEach((transaction) => {
-    totalBalance += transaction.Amount;
+    totalBalance += transaction.amount;
   });
   return totalBalance;
 };
 
 // This function is for requesting method mapping
 var requestMethodCodeMapping = function (args) {
-  console.log('Resolving methodMap...');
-  console.log('Mapping Data:', mappingData);
   return mappingData;
 };
 
@@ -231,3 +254,8 @@ app.use(
 app.listen(4000, () =>
   console.log('Running a GraphQL API server at http://localhost:4000/')
 );
+
+/* 
+I used the following query to test basic functionality: 
+
+*/
