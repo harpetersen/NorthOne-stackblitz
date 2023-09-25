@@ -170,7 +170,9 @@ var updateTransaction = function(args){
   transactions.map(transaction => {
     if (transaction.id == args.id){
       Object.keys(args).forEach(key => {
-        transaction[key] = args[key]
+        if (key !== id){
+          transaction[key] = args[key]
+        }
       })
     }
   })
@@ -179,7 +181,7 @@ var updateTransaction = function(args){
 
 // This function is for removing a transaction entry
 var deleteTransaction = function(args){
-  const index = transactions.findIndex(transaction => transaction.ID === ID);
+  const index = transactions.findIndex(transaction => transaction.id === args.id);
   if (index !== -1) {
     // Remove the transaction at the specified index
     transactions.splice(index, 1);
@@ -190,22 +192,27 @@ var deleteTransaction = function(args){
 
 // This function is for listing all transactions entry
 var requestAllTransactions = function(args){
-  return 
+  return transactions
 }
 
 // This function is for getting all transactions by a method
 var requestTransactionsByMethod = function(args){
-  return
+  args.Method = mappingData.filter(value => args.Method)[0]
+  return transactions.filter(Method => transactions.Method === args.Method)
 }
 
 // This function is for getting the current account balance
-var requestTotalAllTransactionsBalance = function(args){
-  return
+var requestTotalAllTransactionsBalance = function(){
+  let totalBalance = 0;
+  transactions.forEach(transaction => {
+    totalBalance += transaction.Amount;
+  });
+  return totalBalance;
 }
 
 // This function is for requesting method mapping
-var requestMethodCodeToNameMap = function(args){
-  
+var requestMethodCodeToNameMap = function(){
+  return mappingData
 }
 
 const app = express();
