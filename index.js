@@ -149,9 +149,17 @@ const root = {
 // This function is for creating a new transaction
 var createTransaction = function(args){
   args.Method = mappingData.filter(value => args.Method)[0]
-
-    // Call the GraphQL mutation resolver to add a new transaction
-    return resolvers.Mutation.addTransaction({ args });
+  const newTransaction = {
+    Date: args.Date,
+    Amount: args.Amount,
+    Status: args.Status,
+    CounterpartyName: args.CounterpartyName,
+    MethodCode: args.MethodCode,
+    Note: args.Note,
+  }
+  transactions.push(newTransaction);
+  // Call the GraphQL mutation resolver to add a new transaction
+  return newTransaction
 }
 
 // This function is for updating a transaction entry
