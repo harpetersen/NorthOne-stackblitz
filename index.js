@@ -53,6 +53,7 @@ const schema = buildSchema(`
     methodTransactions(value: String!): [Transaction]
     balance: Int
     methodMap: [Mapping]
+    healthCheck: Boolean
   }
 
   type Mutation {
@@ -133,15 +134,15 @@ var transactions = [
 // The root provides a resolver function for each API endpoint
 const root = {
   healthCheck: () => {
-    return 'Server is Responding';
+    return true;
   },
-  addTransaction: createTransaction,
-  updateTransaction: updateTransaction,
-  deleteTransaction: deleteTransaction,
-  allTransactions: requestAllTransactions,
-  methodTransactions: requestTransactionsByMethod,
-  balance: requestTotalAllTransactionsBalance,
-  methodMap: requestMethodCodeMapping,
+  addTransaction: () => { return createTransaction()},
+  updateTransaction: () => { return updateTransaction()},
+  deleteTransaction:  () => { return deleteTransaction()},
+  allTransactions:  () => { return requestAllTransactions()},
+  methodTransactions:  () => { return requestTransactionsByMethod()},
+  balance:  () => { return requestTotalAllTransactionsBalance()},
+  methodMap:  () => { return requestMethodCodeMapping()},
 };
 
 // This function is for creating a new transaction
@@ -211,7 +212,8 @@ var requestTotalAllTransactionsBalance = function () {
 };
 
 // This function is for requesting method mapping
-var requestMethodCodeMapping = function () {
+var requestMethodCodeMapping = function (args) {
+  console.log('Resolving methodMap...');
   console.log('Mapping Data:', mappingData);
   return mappingData;
 };
